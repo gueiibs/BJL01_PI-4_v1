@@ -13,7 +13,7 @@ public class MenuInicial : MonoBehaviour
     public void BotaoJogar()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("Scene01");
+        SceneManager.LoadScene("");
     }
     public void BotaoCreditos()
     {
