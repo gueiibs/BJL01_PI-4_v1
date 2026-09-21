@@ -1,9 +1,19 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static UnityEditor.PlayerSettings;
+using static UnityEngine.EventSystems.EventTrigger;
 
+[System.Serializable] public class ItemClicavel
+{
+    //criacao pra inspecao
+    public GameObject prefabInspecao;
+    public GameObject item;
+    public string nomeItem;
+    public bool inspecionavel;
+}
 //sistema de objs clicaveis
-//*adicionar sistema de inspeção para obj 3Ds*
 public class ClickerManager : MonoBehaviour
 
 {
@@ -11,10 +21,10 @@ public class ClickerManager : MonoBehaviour
     public static ClickerManager Instance {get; private set;}
 
     //cria lista de itens
-    [SerializeField] 
-    private List<GameObject> itensClicaveis = new List<GameObject>();
+    [SerializeField]
+    private List<ItemClicavel> itensClicaveis = new List<ItemClicavel>();
 
-    
+
     private void Awake()
     {
         //impede 2+ ClickerManager de serem ativos se jogador clicar muitas vezes
@@ -27,23 +37,25 @@ public class ClickerManager : MonoBehaviour
         Instance = this;
 
         //Checa todos os objetos da lista
-        foreach (GameObject item in itensClicaveis)
+        //item trocado por dados + ItemClicavel = gameobj
+        foreach (ItemClicavel dados in itensClicaveis)
         {
-            RegistrarItem(item);
+            RegistrarItem(dados);
         }
     }
 
      
-    private void RegistrarItem(GameObject item)
+    private void RegistrarItem(ItemClicavel dados)
     {
         //se o obj não é registrado não é citado na func
-        if (item == null)
+        if (dados == null || dados.item == null)
             return;
 
-        EventTrigger trigger = item.GetComponent<EventTrigger>();
+        EventTrigger trigger = dados.item.GetComponent<EventTrigger>();
+
         if (trigger == null)
         {
-            trigger = item.AddComponent<EventTrigger>();
+            trigger = dados.item.AddComponent<EventTrigger>();
         }
 
         EventTrigger.Entry entry = new EventTrigger.Entry
@@ -51,25 +63,41 @@ public class ClickerManager : MonoBehaviour
             eventID = EventTriggerType.PointerClick
         };
 
-        entry.callback.AddListener((data) => SeClicou(item, (PointerEventData)data));
+        entry.callback.AddListener((eventData) => SeClicou(dados));
 
         trigger.triggers.Add(entry);
     }
 
-    private void SeClicou(GameObject item, PointerEventData data)
+    private void SeClicou(ItemClicavel dados)
     {
-        Debug.Log("Cliquei");
+        if (dados.inspecionavel)
+        {
+            if (InspecaoManager.Instance != null)
+            {
+                InspecaoManager.Instance.Abrir(dados.prefabInspecao);
+            }
+            else
+            {
+                Debug.LogWarning("item inspecionável sem InspectionManager");
+            }
+        }
+        else
+        {
+            Debug.Log($"Cliquei no: {dados.nomeItem}");
+        }
     }
 
     //deixa adicionar obj no meio do jogo
-    private void AdicionarItem(GameObject item)
+    public void AdicionarItem(ItemClicavel dados)
     {
-        if 
-            (item == null || itensClicaveis.Contains(item)) 
+        if (dados == null || dados.item == null)
             return;
-            itensClicaveis.Add(item);
-
-            RegistrarItem(item);
-     }
+        
+        if (!itensClicaveis.Contains(dados))
+        
+        itensClicaveis.Add(dados);
+        RegistrarItem(dados);
+        
+    }
 }
 
