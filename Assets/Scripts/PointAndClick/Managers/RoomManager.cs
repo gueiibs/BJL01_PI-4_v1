@@ -4,10 +4,8 @@ using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 //Direcionamento "360" para cada sala
 public class RoomManager : MonoBehaviour
 {
-    [Header("Paredes")]
     [SerializeField] GameObject paredeNorte, paredeOeste, paredeSul, paredeLeste, paredeTeto;
 
-    [Header("Setas")]
     [SerializeField] GameObject setaEsquerda, setaDireita, setaCima, setaBaixo;
 
     //paredesLaterais guarda a info das paredes
