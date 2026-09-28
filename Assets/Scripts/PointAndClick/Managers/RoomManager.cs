@@ -5,7 +5,6 @@ using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 public class RoomManager : MonoBehaviour
 {
     [SerializeField] GameObject paredeNorte, paredeOeste, paredeSul, paredeLeste, paredeTeto;
-
     [SerializeField] GameObject setaEsquerda, setaDireita, setaCima, setaBaixo;
 
     //paredesLaterais guarda a info das paredes

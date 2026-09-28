@@ -34,7 +34,7 @@ public class InspecaoFuncao : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
         Camera camera = InspecaoManager.Instance.CameraAtual;
 
-        // scrollDelta.y positivo = rodou pra cima = zoom in (FOV menor)
+        // scrollDelta.y positivo = rodou pra cima = zoom in (diminui a disgrama do FOV)
         camera.fieldOfView = Mathf.Clamp(camera.fieldOfView - eventData.scrollDelta.y * zoomSensibilidade, zoomMinimo, zoomMaximo);
     }
 }

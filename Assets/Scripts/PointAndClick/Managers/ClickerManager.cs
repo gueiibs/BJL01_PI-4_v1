@@ -23,7 +23,7 @@ public class ClickerManager : MonoBehaviour
     //cria lista de itens
     [SerializeField]
     private List<ItemClicavel> itensClicaveis = new List<ItemClicavel>();
-
+    //scriptable object -> trocar pela list pra não duplicar no ClickerManager
 
     private void Awake()
     {
