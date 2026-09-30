@@ -1,79 +1,130 @@
+using System.Collections.Generic;
 using UnityEngine;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 //Direcionamento "360" para cada sala
+/// <summary>
+/// Novas modificações 29.09 para utilizar lógica de indices como padrão em todas as salas
+/// </summary>
 public class RoomManager : MonoBehaviour
 {
-    [Header("Paredes")]
-    [SerializeField] GameObject paredeNorte, paredeOeste, paredeSul, paredeLeste, paredeTeto;
+   //Instance = mesma lógica do ClickerManager.cs
+    public static RoomManager Instance { get; private set; }
 
-    [Header("Setas")]
+    [SerializeField] private List<GameObject> salas = new List<GameObject>(); //lista todas as salas do jogo
+    public IReadOnlyList<GameObject> Salas => salas; //acesso as salas sem alterar elas
+
+    [Header("SETAS DAS SALAS")]
+
     [SerializeField] GameObject setaEsquerda, setaDireita, setaCima, setaBaixo;
 
-    //paredesLaterais guarda a info das paredes
-    private GameObject[] paredesLaterais;
     //localAtual vê qual parede tá sendo observada pelo Jogador
-    private int localAtual;
+    //localAtual trocado por paredeAtual
+    private int paredeAtual;
+    private int salaAtual;
+    private bool olhandoTeto;
+    //paredesLaterais guarda a info das paredes 
+    //paredesLaterais trocada por const com tipos, mantendo um padrao p/ todas as salas 
+    private const int Norte = 0, Oeste = 1, Sul = 2, Leste = 3, Teto = 4;
 
-    //localAtual entende que o primeiro é paredeNorte *rever pra salvar 0 como ultimo visto pelo jogador* 
-    void Start()
+    //localAtual entende que o primeiro é paredeNorte
+    private void Awake()
     {
-        paredesLaterais = new GameObject[] { paredeNorte, paredeOeste, paredeSul, paredeLeste };
-        localAtual = 0;
-        ChecarParedeAtual();
+        //checa se ja existe outro RoomManager
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        //coloca o RoomManager como main Instance 
+        Instance = this;
+    }
+
+    private void Start()
+    {
+        //desativa todas as salas ao iniciar
+        for (int i = 0; i < salas.Count; i++)
+        {
+            salas[i].SetActive(false);
+        }
+
+        //se existir uma sala em primeira ela aparece
+        if (salas.Count > 0)
+        {
+            salas[0].SetActive(true);
+            MostrarSala(0);
+        }
+
+    }
+
+    //mostra sala pelo indice
+    public void MostrarSala(int indice)
+    {
+        if (indice < 0 || indice >= salas.Count) //se n existe n aparece
+            return;
+
+        salas[salaAtual].SetActive(false); //desativa ultima mostrada
+        salaAtual = indice; //atualiza indice
+        salas[salaAtual].SetActive(true); //ativa a proxima
+
+        paredeAtual = Norte; //reseta sempre pro norte
+        olhandoTeto = false;
+
+        GetChild(paredeAtual); //mostra a correspondente
+        AtualizarSetas(); //atualiza quais setas tem que aparecer
     }
 
     //A partir do indice criado, usa botaoesqueda + 1 no indice (o% 1% 2% 3% 4%)
     public void BotaoEsquerda()
     {
-        localAtual = (localAtual + 1) % paredesLaterais.Length;
-        ChecarParedeAtual();
+        if (olhandoTeto) //nao pode olhar pros lador se olhar pro teto
+            return;
+
+        paredeAtual = (paredeAtual + 1) % 4; 
+        GetChild(paredeAtual);//nova parede
     }
 
     //O da direita diminui o indice
     public void BotaoDireita()
     {
-        localAtual = (localAtual - 1 + paredesLaterais.Length) % paredesLaterais.Length;
-        ChecarParedeAtual();
+        if (olhandoTeto)
+            return;
+
+        paredeAtual = (paredeAtual - 1 + 4) % 4;
+        GetChild(paredeAtual);
     }
 
     //se o jogador olha pro teto, todas as setas, menos a de baixo são desativadas
     public void BotaoCima()
     {
-        SairParedes();
-        paredeTeto.SetActive(true);
-
-        setaEsquerda.SetActive(false);
-        setaDireita.SetActive(false);
-        setaCima.SetActive(false);
-        setaBaixo.SetActive(true);
+        olhandoTeto = true;
+        GetChild(Teto);
+        AtualizarSetas();
     }
 
     //se o jogador olha pra baixo, desativa a seta de baixo e reativa as outras
     public void BotaoBaixo()
     {
-        ChecarParedeAtual();
-
-        setaEsquerda.SetActive(true);
-        setaDireita.SetActive(true);
-        setaCima.SetActive(true);
-        setaBaixo.SetActive(false);
+        olhandoTeto = false;
+        GetChild(paredeAtual);
+        AtualizarSetas();
     }
 
-    //Ativa o SairParedes() e liga a parede atual de acordo com o indice calculado (%)
-    void ChecarParedeAtual()
+    //só ativa o que corresponde no indice
+    private void GetChild(int indiceFilho)
     {
-        SairParedes();
-        paredesLaterais[localAtual].SetActive(true);
+        Transform sala = salas[salaAtual].transform; //pega sala atual e passa pelos filhos dela
+        for (int i = 0; i < sala.childCount; i++)
+        {
+            sala.GetChild(i).gameObject.SetActive(i == indiceFilho);
+        }
     }
-
     //desativa as paredes
-    void SairParedes()
+    private void AtualizarSetas()
     {
-        paredeNorte.SetActive(false);
-        paredeOeste.SetActive(false);
-        paredeSul.SetActive(false);
-        paredeLeste.SetActive(false);
-        paredeTeto.SetActive(false);
+        if (setaEsquerda != null) setaEsquerda.SetActive(!olhandoTeto);
+        if (setaDireita != null) setaDireita.SetActive(!olhandoTeto);
+        if (setaCima != null) setaCima.SetActive(!olhandoTeto);
+        if (setaBaixo != null) setaBaixo.SetActive(olhandoTeto);
     }
+
 }
