@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -11,6 +10,9 @@ public class ItemClicavel
     public GameObject item;
     public string nomeItem;
     public bool inspecionavel;
+
+    [Header("Arquivo Dialogo")]
+    public TextAsset inkJSON;
 }
 
 //sistema de objs clicaveis
@@ -78,6 +80,17 @@ public class ClickerManager : MonoBehaviour
             else
             {
                 Debug.LogWarning("sem InspectionManager");
+            }
+        }
+        else if (dados.inkJSON != null)
+        {
+            if (DialogueManager.GetInstance() != null)
+            {
+                DialogueManager.GetInstance().AbrirDialogoModo(dados.inkJSON);
+            }
+            else
+            {
+                Debug.LogWarning("sem DialogueManager");
             }
         }
         else
