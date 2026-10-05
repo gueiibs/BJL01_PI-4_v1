@@ -94,7 +94,7 @@ public class RoomManager : MonoBehaviour
     }
 
     //se o jogador olha pro teto, todas as setas, menos a de baixo são desativadas
-    public void BotaoCima()
+    /*public void BotaoCima()
     {
         olhandoTeto = true;
         GetChild(Teto);
@@ -107,7 +107,7 @@ public class RoomManager : MonoBehaviour
         olhandoTeto = false;
         GetChild(paredeAtual);
         AtualizarSetas();
-    }
+    }*/
 
     //só ativa o que corresponde no indice
     private void GetChild(int indiceFilho)
