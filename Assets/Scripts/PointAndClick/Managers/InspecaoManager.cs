@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class InspecaoManager : MonoBehaviour
 {
@@ -34,6 +35,14 @@ public class InspecaoManager : MonoBehaviour
         {
             cameraInspecao.enabled = false;
             zoomPadrao = cameraInspecao.fieldOfView;
+        }
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            Fechar();
         }
     }
 
