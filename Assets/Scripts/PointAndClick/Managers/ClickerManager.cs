@@ -71,6 +71,9 @@ public class ClickerManager : MonoBehaviour
 
     private void SeClicou(ItemClicavel dados)
     {
+        if (DialogueManager.PainelDialogoAberto)
+            return;
+
         if (dados.inspecionavel)
         {
             if (InspecaoManager.Instance != null)

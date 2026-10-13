@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 //Direcionamento "360" para cada sala
 /// <summary>
@@ -15,16 +16,18 @@ public class RoomManager : MonoBehaviour
 
     [Header("SETAS DAS SALAS")]
 
-    [SerializeField] GameObject setaEsquerda, setaDireita, setaCima, setaBaixo;
+    [SerializeField] Button setaEsquerda, setaDireita;
 
     //localAtual vê qual parede tá sendo observada pelo Jogador
     //localAtual trocado por paredeAtual
     private int paredeAtual;
     private int salaAtual;
-    private bool olhandoTeto;
+
     //paredesLaterais guarda a info das paredes 
     //paredesLaterais trocada por const com tipos, mantendo um padrao p/ todas as salas 
-    private const int Norte = 0, Oeste = 1, Sul = 2, Leste = 3, Teto = 4;
+    private const int Norte = 0, Oeste = 1, Sul = 2, Leste = 3;
+
+    private bool dialogoAberto;
 
     //localAtual entende que o primeiro é paredeNorte
     private void Awake()
@@ -67,7 +70,6 @@ public class RoomManager : MonoBehaviour
         salas[salaAtual].SetActive(true); //ativa a proxima
 
         paredeAtual = Norte; //reseta sempre pro norte
-        olhandoTeto = false;
 
         GetChild(paredeAtual); //mostra a correspondente
         AtualizarSetas(); //atualiza quais setas tem que aparecer
@@ -76,9 +78,6 @@ public class RoomManager : MonoBehaviour
     //A partir do indice criado, usa botaoesqueda + 1 no indice (o% 1% 2% 3% 4%)
     public void BotaoEsquerda()
     {
-        if (olhandoTeto) //nao pode olhar pros lador se olhar pro teto
-            return;
-
         paredeAtual = (paredeAtual + 1) % 4; 
         GetChild(paredeAtual);//nova parede
     }
@@ -86,28 +85,9 @@ public class RoomManager : MonoBehaviour
     //O da direita diminui o indice
     public void BotaoDireita()
     {
-        if (olhandoTeto)
-            return;
-
         paredeAtual = (paredeAtual - 1 + 4) % 4;
         GetChild(paredeAtual);
     }
-
-    //se o jogador olha pro teto, todas as setas, menos a de baixo são desativadas
-    /*public void BotaoCima()
-    {
-        olhandoTeto = true;
-        GetChild(Teto);
-        AtualizarSetas();
-    }
-
-    //se o jogador olha pra baixo, desativa a seta de baixo e reativa as outras
-    public void BotaoBaixo()
-    {
-        olhandoTeto = false;
-        GetChild(paredeAtual);
-        AtualizarSetas();
-    }*/
 
     //só ativa o que corresponde no indice
     private void GetChild(int indiceFilho)
@@ -118,13 +98,34 @@ public class RoomManager : MonoBehaviour
             sala.GetChild(i).gameObject.SetActive(i == indiceFilho);
         }
     }
+
+    private void OnEnable()
+    {
+        DialogueManager.OnEstadoDialogoMudou += AoMudarEstadoDialogo;
+    }
+
+    private void OnDisable()
+    {
+        DialogueManager.OnEstadoDialogoMudou -= AoMudarEstadoDialogo;
+    }
+
+    private void AoMudarEstadoDialogo(bool aberto)
+    {
+        dialogoAberto = aberto;
+        AtualizarSetas();
+    }
+
     //desativa as paredes
     private void AtualizarSetas()
     {
-        if (setaEsquerda != null) setaEsquerda.SetActive(!olhandoTeto);
-        if (setaDireita != null) setaDireita.SetActive(!olhandoTeto);
-        if (setaCima != null) setaCima.SetActive(!olhandoTeto);
-        if (setaBaixo != null) setaBaixo.SetActive(olhandoTeto);
+        if (setaEsquerda != null)
+        {
+            setaEsquerda.interactable = !dialogoAberto;
+        }
+        if (setaDireita != null)
+        { 
+            setaDireita.interactable = !dialogoAberto;
+        }
     }
 
 }
