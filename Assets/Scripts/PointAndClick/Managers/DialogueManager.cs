@@ -4,178 +4,110 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using Ink.UnityIntegration;
 
 public class DialogueManager : MonoBehaviour
 {
-    [Header("DIALOGO UI")]
+    public static DialogueManager Instance { get; private set; }
+
+    [SerializeField] private InkFile arquivoInk; //arquivo Ink unico do jogo
+
+    [Header("UI")]
     [SerializeField] private GameObject painelDialogos;
     [SerializeField] private TextMeshProUGUI textoDialogos;
-
-    [Header("ESCOLHAS")]
     [SerializeField] private GameObject painelEscolhas;
     [SerializeField] private Button botaoEscolhaPrefab;
+    [SerializeField] private GameObject painelSetas; //some enquanto o dialogo ta aberto
 
-    [System.Serializable]
-    public class PainelPorTag
+    public bool Aberto => painelDialogos.activeSelf;
+
+    [System.Serializable] 
+    public class PainelTag
     {
         public string tag;
         public GameObject painel;
     }
 
-    [Header("Painéis ativados por tag do Ink")]
-    [SerializeField] private List<PainelPorTag> paineisPorTag = new List<PainelPorTag>();
-
-    private readonly List<GameObject> botoesEscolhaInstanciados = new List<GameObject>();
-
-    private Story historiaAtual;
-    private bool dialogoTocando;
-
-    private static DialogueManager instance;
-
-    public static bool PainelDialogoAberto => instance != null && instance.dialogoTocando;
-    public static event System.Action<bool> OnEstadoDialogoMudou;
+    private Story story;
 
     private void Awake()
     {
-        if (instance != null)
-        {
-            Debug.LogWarning("mais de um manager");
-        }
-        instance = this;
-    }
-
-    public static DialogueManager GetInstance()
-    {
-        return instance;
-    }
-
-    private void Start()
-    {
-        dialogoTocando = false;
-        painelDialogos.SetActive(false);
-        painelEscolhas.SetActive(false);
+        Instance = this;
+        story = new Story(arquivoInk.storyJson);
     }
 
     private void Update()
     {
-        if (!dialogoTocando)
-            return;
 
-        //só avança por espaço se NÃO houver escolhas esperando resposta
-        if (historiaAtual.currentChoices.Count == 0 && Keyboard.current.spaceKey.wasPressedThisFrame)
+        //avança com espaço so se o dialogo ta aberto e sem escolhas pendentes
+        if (painelDialogos.activeSelf && story.currentChoices.Count == 0 && Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            ContinuarHistoria();
+            Continuar();
         }
     }
 
-    public void AbrirDialogoModo(TextAsset inkJSON)
+    public bool ExisteCaminho(string caminho)
     {
-        historiaAtual = new Story(inkJSON.text);
-        dialogoTocando = true;
+        return story.ContentAtPath(new Ink.Runtime.Path(caminho)).correctObj != null;
+    }
+
+
+    public void IniciarDialogo(string caminho)
+    {
+        if (painelDialogos.activeSelf)
+            return; //ignora cliques enquanto ja tem um dialogo aberto
+
+        story.ChoosePathString(caminho);
         painelDialogos.SetActive(true);
-        OnEstadoDialogoMudou?.Invoke(true);
-
-        ContinuarHistoria();
+        Continuar();
     }
 
-    private void SairDialogoModo()
+    public void Continuar()
     {
-        dialogoTocando = false;
+        if (!story.canContinue)
+        {
+            Sair();
+                return;
+        }
+
+        textoDialogos.text = story.Continue();
+        ProcessarTags();
+        MostrarEscolhas();
+    }
+    private void ProcessarTags()
+    {
+        foreach (string tag in story.currentTags)
+        {
+            //Debug.Log($"Tag recebida sala '{tag}'");
+            if (tag.StartsWith("sala:") && int.TryParse(tag.Substring(5).Trim(), out int indice))
+            {
+                //Debug.Log($"Indo para a sala {indice}");
+                RoomManager.Instance.MostrarSala(indice);
+            }
+        }
+    }
+
+    private void Sair()
+    {
         painelDialogos.SetActive(false);
-        textoDialogos.text = "";
-        LimparEscolhas();
-        OnEstadoDialogoMudou?.Invoke(false);
-    }
-
-    public void ContinuarHistoria()
-    {
-        if (historiaAtual.canContinue)
-        {
-            textoDialogos.text = historiaAtual.Continue();
-            ProcessarTags(historiaAtual.currentTags);
-            MostrarEscolhasSeHouver();
-        }
-        else if (historiaAtual.currentChoices.Count > 0)
-        {
-            MostrarEscolhasSeHouver();
-        }
-        else
-        {
-            SairDialogoModo();
-        }
-    }
-
-    private void ProcessarTags(List<string> tags)
-    {
-        foreach (string tagCompleta in tags)
-        {
-            string[] partes = tagCompleta.Split(':');
-            if (partes.Length < 2)
-                continue;
-
-            string chave = partes[0].Trim();
-            string valor = partes[1].Trim();
-
-            if (chave == "painel")
-            {
-                AtivarPainel(valor);
-            }
-        }
-    }
-
-    private void AtivarPainel(string nomeTag)
-    {
-        foreach (PainelPorTag item in paineisPorTag)
-        {
-            if (item.tag == nomeTag && item.painel != null)
-            {
-                item.painel.SetActive(true);
-            }
-        }
-    }
-
-    private void MostrarEscolhasSeHouver()
-    {
-        LimparEscolhas();
-
-        if (historiaAtual.currentChoices.Count == 0)
-        {
-            painelEscolhas.SetActive(false);
-            return;
-        }
-
-        painelEscolhas.SetActive(true);
-
-        for (int i = 0; i < historiaAtual.currentChoices.Count; i++)
-        {
-            Choice escolha = historiaAtual.currentChoices[i];
-            Button botao = Instantiate(botaoEscolhaPrefab, painelEscolhas.transform);
-
-            TextMeshProUGUI texto = botao.GetComponentInChildren<TextMeshProUGUI>();
-            if (texto != null)
-                texto.text = escolha.text;
-
-            int indice = i; //cópia local, evita bug de closure
-            botao.onClick.AddListener(() => EscolherOpcao(indice));
-
-            botoesEscolhaInstanciados.Add(botao.gameObject);
-        }
-    }
-
-    private void EscolherOpcao(int indice)
-    {
-        historiaAtual.ChooseChoiceIndex(indice);
-        LimparEscolhas();
-        ContinuarHistoria();
-    }
-
-    private void LimparEscolhas()
-    {
-        foreach (GameObject botao in botoesEscolhaInstanciados)
-        {
-            Destroy(botao);
-        }
-        botoesEscolhaInstanciados.Clear();
         painelEscolhas.SetActive(false);
+        painelSetas.SetActive(!ZoomManager.Instance.Aberto);
+    }
+
+    private void MostrarEscolhas()
+    {
+        foreach (Transform filho in painelEscolhas.transform)
+            Destroy(filho.gameObject);
+
+        painelEscolhas.SetActive(story.currentChoices.Count > 0);
+
+        for (int i = 0; i < story.currentChoices.Count; i++)
+        {
+            Button botao = Instantiate(botaoEscolhaPrefab, painelEscolhas.transform);
+            botao.GetComponentInChildren<TextMeshProUGUI>().text = story.currentChoices[i].text;
+
+            int indice = i; //copy local por causa do closure
+            botao.onClick.AddListener(() => {story.ChooseChoiceIndex(indice);Continuar();});
+        }
     }
 }

@@ -4,41 +4,53 @@ using TMPro;
 
 public class MenuInicial : MonoBehaviour
 {
-    [Header("Paineis")]
+    [SerializeField] TMP_Dropdown opcoesTela;
+
+    [Header("Painéis")]
     [SerializeField] GameObject painelMenu;
     [SerializeField] GameObject painelCreditos;
     [SerializeField] GameObject painelConfiguracoes;
 
+    const string CenaJogo = "BuildTest";
 
     public void BotaoJogar()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("BuildTest");
-    }
-    public void BotaoCreditos()
-    {
-        FecharTodosPaineis();
-        painelCreditos.SetActive(true);
-    }
-    public void BotaoConfiguracoes()
-    {
-        FecharTodosPaineis();
-        painelConfiguracoes.SetActive(true);
-    }
-    public void BotaoVoltarMenu()
-    {
-        FecharTodosPaineis();
-        painelMenu.SetActive(true);
-    }
-    public void BotaoSair()
-    {
-        Application.Quit();
+        SceneManager.LoadScene(CenaJogo);
     }
 
-    void FecharTodosPaineis()
+    public void BotaoCreditos() => MostrarPainel(painelCreditos);
+    public void BotaoConfiguracoes() => MostrarPainel(painelConfiguracoes);
+    public void BotaoVoltarMenu() => MostrarPainel(painelMenu);
+    public void BotaoSair() => Application.Quit();
+
+    public void MudarTela(int modo)
+    {
+        ModoTela(modo);
+        PlayerPrefs.SetInt("ModoTela", modo);
+        PlayerPrefs.Save();
+    }
+
+    public void ModoTela(int modo)
+    {
+        switch (modo)
+        {
+            case 0: Screen.fullScreenMode = FullScreenMode.MaximizedWindow; //---> tela cheia
+                break; 
+            case 1: Screen.fullScreenMode = FullScreenMode.FullScreenWindow; //---> janela em tela cheia
+                break; 
+            case 2: Screen.fullScreenMode = FullScreenMode.Windowed; //---> janela
+                break;          
+        }
+
+    }
+
+    void MostrarPainel(GameObject painel)
     {
         painelMenu.SetActive(false);
         painelCreditos.SetActive(false);
         painelConfiguracoes.SetActive(false);
+
+        painel.SetActive(true);
     }
 }

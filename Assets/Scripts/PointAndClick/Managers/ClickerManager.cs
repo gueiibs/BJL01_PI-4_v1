@@ -1,116 +1,63 @@
-using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-[System.Serializable]
-public class ItemClicavel
-{
-    //criacao pra inspecao
-    public GameObject prefabInspecao;
-    public GameObject item;
-    public string nomeItem;
-    public bool inspecionavel;
-
-    [Header("Arquivo Dialogo")]
-    public TextAsset inkJSON;
-}
-
-//sistema de objs clicaveis
 public class ClickerManager : MonoBehaviour
 {
-    //Instance = lógica de singleton -> facilita chamada com ClickerManager.Instance pra acessar func
-    public static ClickerManager Instance { get; private set; }
-
-    //cria lista de itens
-    [SerializeField]
-    private List<ItemClicavel> itensClicaveis = new List<ItemClicavel>();
-
-    //scriptable object -> trocar pela list pra não duplicar no ClickerManager
-
-    private void Awake()
+    private void Start()
     {
-        //impede 2+ ClickerManager de serem ativos se jogador clicar muitas vezes
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        //salas > paredes > itens
+        foreach (GameObject sala in RoomManager.Instance.SALAS)
+            foreach (Transform parede in sala.transform)
+                foreach (Transform item in parede)
+                    Registrar(item, $"{Nome(sala.transform)}.{Nome(parede)}_{Nome(item)}");
 
-        Instance = this;
-
-        //Checa todos os objetos da lista
-        //item trocado por dados + ItemClicavel = gameobj
-        foreach (ItemClicavel dados in itensClicaveis)
-        {
-            RegistrarItem(dados);
-        }
+        //zooms > itens (o painel de zoom faz o papel de sala)
+        foreach (Transform zoom in ZoomManager.Instance.Raiz)
+            foreach (Transform item in zoom)
+                Registrar(item, $"{Nome(zoom)}.{Nome(item)}");
     }
 
-    private void RegistrarItem(ItemClicavel dados)
+    private void Registrar(Transform item, string caminho)
     {
-        //se o obj não é registrado não é citado na func
-        if (dados == null || dados.item == null)
-            return;
+        item.gameObject.AddComponent<ItemClicavel>().caminho = caminho;
 
-        EventTrigger trigger = dados.item.GetComponent<EventTrigger>();
-
-        if (trigger == null)
-        {
-            trigger = dados.item.AddComponent<EventTrigger>();
-        }
-
-        EventTrigger.Entry entry = new EventTrigger.Entry
-        {
-            eventID = EventTriggerType.PointerClick
-        };
-
-        entry.callback.AddListener((eventData) => SeClicou(dados));
-
-        trigger.triggers.Add(entry);
+        if (ZoomManager.Instance.Buscar(caminho) == null
+            && PrefabInspecao(caminho) == null
+            && !DialogueManager.Instance.ExisteCaminho(caminho))
+            Debug.LogWarning($"Sem zoom, inspeção nem texto no Ink: {caminho}");
     }
 
-    private void SeClicou(ItemClicavel dados)
+    //minúsculo, qualquer símbolo ou espaço vira "_"
+    public static string Nome(Transform t) =>
+        Regex.Replace(t.name.ToLower(), "[^a-z0-9]+", "_").Trim('_');
+
+    public static GameObject PrefabInspecao(string caminho) =>
+        Resources.Load<GameObject>("Inspecao/" + caminho.Replace('.', '_'));
+}
+
+public class ItemClicavel : MonoBehaviour, IPointerClickHandler
+{
+    public string caminho;
+
+    public void OnPointerClick(PointerEventData eventData)
     {
-        if (DialogueManager.PainelDialogoAberto)
+        if (DialogueManager.Instance.Aberto)
             return;
 
-        if (dados.inspecionavel)
+        GameObject zoom = ZoomManager.Instance.Buscar(caminho);
+        if (zoom != null)
         {
-            if (InspecaoManager.Instance != null)
-            {
-                InspecaoManager.Instance.Abrir(dados.prefabInspecao);
-            }
-            else
-            {
-                Debug.LogWarning("sem InspectionManager");
-            }
+            ZoomManager.Instance.Abrir(zoom);
+            return;
         }
-        else if (dados.inkJSON != null)
-        {
-            if (DialogueManager.GetInstance() != null)
-            {
-                DialogueManager.GetInstance().AbrirDialogoModo(dados.inkJSON);
-            }
-            else
-            {
-                Debug.LogWarning("sem DialogueManager");
-            }
-        }
+
+        GameObject prefab = PrefabInspecao(caminho);
+        if (prefab != null)
+            InspecaoManager.Instance.Abrir(prefab);
         else
-        {
-            Debug.Log($"Cliquei no: {dados.nomeItem}");
-        }
+            DialogueManager.Instance.IniciarDialogo(caminho);
     }
 
-    //deixa adicionar obj no meio do jogo
-    public void AdicionarItem(ItemClicavel dados)
-    {
-        if (dados == null || dados.item == null)
-            return;
-
-        if (!itensClicaveis.Contains(dados))
-            itensClicaveis.Add(dados);
-
-        RegistrarItem(dados);
-    }
+    private static GameObject PrefabInspecao(string caminho) => ClickerManager.PrefabInspecao(caminho);
 }
