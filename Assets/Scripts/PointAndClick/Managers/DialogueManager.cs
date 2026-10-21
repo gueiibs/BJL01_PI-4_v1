@@ -5,21 +5,39 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using Ink.UnityIntegration;
+using UnityEngine.InputSystem.Utilities;
 
 public class DialogueManager : MonoBehaviour
 {
-    public static DialogueManager Instance { get; private set; }
-
     [SerializeField] private InkFile arquivoInk; //arquivo Ink unico do jogo
+
+    public static DialogueManager Instance { get; private set; }
+    [Header("NOTIFICAÇÃO")]
+    [SerializeField] private GameObject painelNotificacao;
+    [SerializeField] private TextMeshProUGUI textoNotificacao;
+    [SerializeField] private Image iconeNotificacao;
+    [SerializeField] private float duracaoNotificacao = 2.5f;
+
+    private ItemData itemPendente;
 
     [Header("UI")]
     [SerializeField] private GameObject painelDialogos;
     [SerializeField] private TextMeshProUGUI textoDialogos;
     [SerializeField] private GameObject painelEscolhas;
     [SerializeField] private Button botaoEscolhaPrefab;
+    [SerializeField] private GameObject botaoContinuar;
+    //[SerializeField] private Button botaoVoltarZoom; //botao voltar painel/tela anterior ao zoom(mesmo se for "zoom->zoom->zoom")
     [SerializeField] private GameObject painelSetas; //some enquanto o dialogo ta aberto
 
+    [Header("INPUT")]
+    [SerializeField] private GameObject painelInput;
+    [SerializeField] private TMP_InputField input;
+
+    private bool esperandoSenha;
+
     public bool Aberto => painelDialogos.activeSelf;
+
+
 
     [System.Serializable] 
     public class PainelTag
@@ -34,13 +52,15 @@ public class DialogueManager : MonoBehaviour
     {
         Instance = this;
         story = new Story(arquivoInk.storyJson);
+
+        story.BindExternalFunction("TemItem", (string nome) => Inventario.Instance.Tem(nome));
+        painelNotificacao.SetActive(false);
     }
 
     private void Update()
     {
-
         //avança com espaço so se o dialogo ta aberto e sem escolhas pendentes
-        if (painelDialogos.activeSelf && story.currentChoices.Count == 0 && Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (painelDialogos.activeSelf && !esperandoSenha && story.currentChoices.Count == 0 && Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             Continuar();
         }
@@ -52,16 +72,20 @@ public class DialogueManager : MonoBehaviour
     }
 
 
+    private string caminhoAtual;
+
     public void IniciarDialogo(string caminho)
     {
-        if (painelDialogos.activeSelf)
-            return; //ignora cliques enquanto ja tem um dialogo aberto
+        if (painelDialogos.activeSelf || !ExisteCaminho(caminho))
+            return;
 
+        caminhoAtual = caminho;
         story.ChoosePathString(caminho);
         painelDialogos.SetActive(true);
+        painelSetas.SetActive(false);
+        //botaoVoltarZoom.SetActi
         Continuar();
     }
-
     public void Continuar()
     {
         if (!story.canContinue)
@@ -70,28 +94,100 @@ public class DialogueManager : MonoBehaviour
                 return;
         }
 
-        textoDialogos.text = story.Continue();
+        string texto = story.Continue().Trim();
         ProcessarTags();
+
+        if (texto == "")
+        {
+            Continuar(); //pula linhas sem texto, mas a tag ja foi processada
+                return;
+        }
+
+        textoDialogos.text = texto;
         MostrarEscolhas();
     }
     private void ProcessarTags()
     {
         foreach (string tag in story.currentTags)
         {
-            //Debug.Log($"Tag recebida sala '{tag}'");
             if (tag.StartsWith("sala:") && int.TryParse(tag.Substring(5).Trim(), out int indice))
             {
-                //Debug.Log($"Indo para a sala {indice}");
                 RoomManager.Instance.MostrarSala(indice);
+            }
+            else if (tag.StartsWith("pegar:"))
+            {
+                string nome = tag.Substring(6).Trim();
+                ItemData item = Resources.Load<ItemData>("Itens/" + nome);
+
+                if (item == null)
+                {
+                    Debug.LogWarning($"Item não encontrado em Resources/Itens: {nome}");
+                    continue;
+                }
+
+                if (!Inventario.Instance.Adicionar(item))
+                    continue; //inventáario cheio = o objeto continua na cena
+
+                if (!Inventario.Instance.Adicionar(item))
+                    continue; //inventário cheio: o objeto continua na cena
+
+                itemPendente = item;
+                Notificar(item);
+
+                GameObject obj = ClickerManager.Item(caminhoAtual); //esconde o objeto clicado
+                if (obj != null)
+                    obj.SetActive(false);
+            }
+
+            else if (tag == "digitar")
+            {
+                esperandoSenha = true;
+                input.text = "";
+                input.ActivateInputField();
+            }
+
+            else if (tag.StartsWith("zoom:"))
+            {
+                GameObject zoom = ZoomManager.Instance.Buscar(tag.Substring(5).Trim());
+                if (zoom != null)
+                    ZoomManager.Instance.Abrir(zoom);
+                else
+                    Debug.LogWarning($"Zoom naum encontrado: {tag}");
             }
         }
     }
+    private void Notificar(ItemData item)
+    {
+        textoNotificacao.text = $"<line-height=120%><size=80%><b>ITEM COLETADO</b></size> \n<i>{item.Nome}</i>"; 
+        iconeNotificacao.sprite = item.icone;
+        painelNotificacao.SetActive(true);
+        CancelInvoke(nameof(EsconderNotificacao));
+        Invoke(nameof(EsconderNotificacao), duracaoNotificacao);
+    }
 
+    public void SeSenhaEstaCorreta()
+    {
+        story.variablesState["senhacomputador"] = input.text.Trim().Replace(" ", "");
+        IniciarDialogo("zoom_computadorsecretaria.verificarsenha");
+
+    }
+
+    private void EsconderNotificacao() => painelNotificacao.SetActive(false);
     private void Sair()
     {
         painelDialogos.SetActive(false);
         painelEscolhas.SetActive(false);
         painelSetas.SetActive(!ZoomManager.Instance.Aberto);
+
+        botaoContinuar.SetActive(false);
+        esperandoSenha = false;
+
+        if (itemPendente != null)
+        {
+            if (itemPendente.prefabInspecao != null)
+                InspecaoManager.Instance.Abrir(itemPendente.prefabInspecao);
+            itemPendente = null;
+        }
     }
 
     private void MostrarEscolhas()
@@ -100,6 +196,7 @@ public class DialogueManager : MonoBehaviour
             Destroy(filho.gameObject);
 
         painelEscolhas.SetActive(story.currentChoices.Count > 0);
+        botaoContinuar.SetActive(story.currentChoices.Count == 0);
 
         for (int i = 0; i < story.currentChoices.Count; i++)
         {
@@ -109,5 +206,6 @@ public class DialogueManager : MonoBehaviour
             int indice = i; //copy local por causa do closure
             botao.onClick.AddListener(() => {story.ChooseChoiceIndex(indice);Continuar();});
         }
+
     }
 }

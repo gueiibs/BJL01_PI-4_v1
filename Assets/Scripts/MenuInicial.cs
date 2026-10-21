@@ -11,7 +11,7 @@ public class MenuInicial : MonoBehaviour
     [SerializeField] GameObject painelCreditos;
     [SerializeField] GameObject painelConfiguracoes;
 
-    const string CenaJogo = "BuildTest";
+    const string CenaJogo = "01_AndarUm";
 
     public void BotaoJogar()
     {

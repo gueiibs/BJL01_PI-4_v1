@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public class InspecaoManager : MonoBehaviour
 {
+    //maior dimensão do item, em unidades do mundo
+    [SerializeField] private float tamanhoAlvo = 1.5f; 
     //Instance = mesma lógica do ClickerManager.cs
     public static InspecaoManager Instance { get; private set; }
 
@@ -51,7 +53,7 @@ public class InspecaoManager : MonoBehaviour
     {
         if (prefab == null || spawnInspecao == null)
         {
-            Debug.LogWarning("nao configurado");
+            Debug.LogWarning("prefab nao configurado");
             return;
         }
 
@@ -67,6 +69,26 @@ public class InspecaoManager : MonoBehaviour
             cameraInspecao.fieldOfView = zoomPadrao; //reseta o zoom a cada novo item aberto
         }
         if (painelInspecao != null) painelInspecao.SetActive(true);
+
+        //centraliza e normaliza o tamanho pelo mesh
+        Renderer[] rs = CurrentObject.GetComponentsInChildren<Renderer>();
+        if (rs.Length > 0)
+        {
+            Bounds b = rs[0].bounds;
+            foreach (Renderer r in rs) b.Encapsulate(r.bounds);
+
+            //1. centraliza
+            Vector3 desvio = b.center - CurrentObject.transform.position;
+            foreach (Transform filho in CurrentObject.transform)
+                filho.position -= desvio;
+
+            //2. escala para a maior dimensão virar "tamanhoAlvo"
+            float maior = Mathf.Max(b.size.x, b.size.y, b.size.z);
+            if (maior > 0.0001f)
+                CurrentObject.transform.localScale *= tamanhoAlvo / maior;
+        }
+
+
 
         Debug.Log("Abrido");
     }
