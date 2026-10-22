@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class InspecaoManager : MonoBehaviour
 {
     //maior dimensão do item, em unidades do mundo
-    [SerializeField] private float tamanhoAlvo = 1.5f; 
+    [SerializeField] private float tamanhoAlvo = 1.5f;
     //Instance = mesma lógica do ClickerManager.cs
     public static InspecaoManager Instance { get; private set; }
 
@@ -16,14 +16,10 @@ public class InspecaoManager : MonoBehaviour
     [SerializeField] private Transform spawnInspecao;
     [SerializeField] private Camera cameraInspecao;
 
-    public Camera CameraAtual => cameraInspecao; //deixa os .cs pegarem a camera atual
-
-    private float zoomPadrao; //guarda o fov pra restaurar o Zoom
-
     private void Awake()
     {
         //se já tem outro inspecaomanager ele destroi
-        if (Instance != null && Instance != this) 
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
@@ -32,12 +28,9 @@ public class InspecaoManager : MonoBehaviour
 
         //painel inicia desativado
         if (painelInspecao != null) painelInspecao.SetActive(false);
-        
+
         if (cameraInspecao != null)
-        {
             cameraInspecao.enabled = false;
-            zoomPadrao = cameraInspecao.fieldOfView;
-        }
     }
 
     private void Update()
@@ -64,10 +57,8 @@ public class InspecaoManager : MonoBehaviour
         CurrentObject = Instantiate(prefab, spawnInspecao.position, spawnInspecao.rotation, spawnInspecao);
 
         if (cameraInspecao != null)
-        {
             cameraInspecao.enabled = true; //ativa cam da inspeção
-            cameraInspecao.fieldOfView = zoomPadrao; //reseta o zoom a cada novo item aberto
-        }
+
         if (painelInspecao != null) painelInspecao.SetActive(true);
 
         //centraliza e normaliza o tamanho pelo mesh
@@ -88,8 +79,6 @@ public class InspecaoManager : MonoBehaviour
                 CurrentObject.transform.localScale *= tamanhoAlvo / maior;
         }
 
-
-
         Debug.Log("Abrido");
     }
 
@@ -103,7 +92,7 @@ public class InspecaoManager : MonoBehaviour
             CurrentObject = null;
         }
 
-        //desativa a cam + painel 
+        //desativa a cam + painel
         if (cameraInspecao != null) cameraInspecao.enabled = false;
         if (painelInspecao != null) painelInspecao.SetActive(false);
     }

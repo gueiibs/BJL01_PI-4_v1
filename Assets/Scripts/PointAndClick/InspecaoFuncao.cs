@@ -1,15 +1,12 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class InspecaoFuncao : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
+//2010 zoom retirado por excesso de bugs
+
+public class InspecaoFuncao : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [Header("Rotação")]
     [SerializeField] private float sensibilidade; //definição do quanto o objeto gira ao arrastar o mouse
-
-    [Header("Zoom")]
-    [SerializeField] private float zoomSensibilidade;//definição da velo do zoom
-    [SerializeField] private float zoomMinimo;//maior fov que pode ter
-    [SerializeField] private float zoomMaximo;//menor
 
     //só é chamando quando o jogador inicia o arrastar do mouse (segurando mouse1)
     public void OnBeginDrag(PointerEventData eventData) { }
@@ -18,7 +15,7 @@ public class InspecaoFuncao : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     public void OnDrag(PointerEventData eventData)
     {
         //verefica se tem obj em inspeção
-        if (InspecaoManager.Instance == null || InspecaoManager.Instance.CurrentObject == null) 
+        if (InspecaoManager.Instance == null || InspecaoManager.Instance.CurrentObject == null)
             return;
 
         Transform alvo = InspecaoManager.Instance.CurrentObject.transform; //pega o obj em inspeção
@@ -32,18 +29,4 @@ public class InspecaoFuncao : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     //entende quando o jogador para de arrastar/segurar mouse (button mouse1)
     public void OnEndDrag(PointerEventData eventData) { }
-
-    //faz o scroll detectar
-    public void OnScroll(PointerEventData eventData)
-    {
-        //checa a camera de inspeção pra não ter conflito
-        if (InspecaoManager.Instance == null || InspecaoManager.Instance.CameraAtual == null) 
-            return;
-
-        //ativa a camera de inspeção
-        Camera camera = InspecaoManager.Instance.CameraAtual;
-
-        //altera o fov de acordo com as limitações
-        camera.fieldOfView = Mathf.Clamp(camera.fieldOfView - eventData.scrollDelta.y * zoomSensibilidade, zoomMinimo, zoomMaximo);
-    }
 }

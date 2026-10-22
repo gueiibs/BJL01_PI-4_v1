@@ -22,6 +22,12 @@ public class ClickerManager : MonoBehaviour
                 foreach (Transform item in parede)
                 {
                     string caminho = $"{Nome(sala.transform)}.{Nome(parede)}_{Nome(item)}";
+
+                    //personagem: se existe o knot npc_<nome do objeto>, ele tem prioridade
+                    string npc = "npc_" + Nome(item);
+                    if (DialogueManager.Instance.ExisteCaminho(npc))
+                        caminho = npc;
+
                     Registrar(item, caminho);
 
                     if (!itens.ContainsKey(caminho))

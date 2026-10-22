@@ -1,12 +1,3 @@
-// GERAL
-EXTERNAL TemItem(nome)
-// SECRETARIA (DENTRO)
-VAR senhacomputador = ""
-VAR computadorsecretaria_desbloqueado = false
-// (FORA)
-VAR porta_secretaria_aberta = false
-//
-
 === 1_salao_principal ===
 
 = paredenorte_indicasecretaria

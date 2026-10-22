@@ -9,14 +9,13 @@ using UnityEngine.InputSystem.Utilities;
 
 public class DialogueManager : MonoBehaviour
 {
-    [SerializeField] private InkFile arquivoInk; //arquivo Ink unico do jogo
+    [SerializeField] private InkFile arquivoInk; //arquivo Ink main com variaveis do jogo
 
     public static DialogueManager Instance { get; private set; }
     [Header("NOTIFICAÇÃO")]
     [SerializeField] private GameObject painelNotificacao;
     [SerializeField] private TextMeshProUGUI textoNotificacao;
-    [SerializeField] private Image iconeNotificacao;
-    [SerializeField] private float duracaoNotificacao = 2.5f;
+    [SerializeField] private float duracaoNotificacao;
 
     private ItemData itemPendente;
 
@@ -68,7 +67,14 @@ public class DialogueManager : MonoBehaviour
 
     public bool ExisteCaminho(string caminho)
     {
-        return story.ContentAtPath(new Ink.Runtime.Path(caminho)).correctObj != null;
+        try
+        {
+            return story.ContentAtPath(new Ink.Runtime.Path(caminho)).correctObj != null;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
 
@@ -158,8 +164,7 @@ public class DialogueManager : MonoBehaviour
     }
     private void Notificar(ItemData item)
     {
-        textoNotificacao.text = $"<line-height=120%><size=80%><b>ITEM COLETADO</b></size> \n<i>{item.Nome}</i>"; 
-        iconeNotificacao.sprite = item.icone;
+        textoNotificacao.text = $"<line-height=120%><size=80%><b>ITEM COLETADO</b></size> \n<i>{item.Nome}</i>";
         painelNotificacao.SetActive(true);
         CancelInvoke(nameof(EsconderNotificacao));
         Invoke(nameof(EsconderNotificacao), duracaoNotificacao);
