@@ -1,7 +1,7 @@
 === 1_salao_principal ===
 
 = paredenorte_indicasecretaria
-Alí é a secretaria.
+Tem uma janela para uma sala alí.
 -> END
 
 = paredenorte_mapa
@@ -37,8 +37,17 @@ Não dá pra ver nada com essa cortina na frente.
 -> END
 
 = paredeleste_mapaquadro
-Talvez esse mapa seja útil pra mim.
--> END
+{ tem_mapanormal:
+    Não preciso mais disso.
+    -> END
+}
+Acho que é o mapa da escola, posso dar uma olhada.
++ [Verificar]
+    Deixa eu ver direito. # zoom: zoom_mapaescolanormal
+    -> END
++ [Agora não]
+    Vou andar por aí antes.
+    -> END
 
 = paredesul_entradasaidaescola
 Eu não devia sair até resolver <b>tudo isso</b>...
@@ -115,7 +124,7 @@ Esse ventilador tá todo empoeirado.
 === 3_entrada_porao ===
 
 = paredenorte_banheiromasc
-Não preciso usar o banheiro agora, mas talvez tenha algo útil lá.
+Tá trancado, talvez eu ache a chave por aí.
 -> END
 
 = paredenorte_banheirofem
@@ -150,9 +159,10 @@ Tem algumas fotos sobre quem estuda aqui.
 Tem as atualizações e noticias da semana.
 -> END
 
-= paredeleste_passagemcorredorprofs
+= paredeleste_passagemcorredor
+// sala 5 = corredor 6
 Posso ir ver o que tem alí.
-+ [Ir] # sala: 0
++ [Ir] # sala: 5
     -> END 
 + [Ficar aqui]
     Talvez tenha mais alguma coisa aqui.
@@ -199,16 +209,64 @@ A chave encaixa na fechadura.
 -> END
 
  ----------------------------------*/
+/* ---------------------------------
+=== 4_banheiro_feminino ===
+
+= paredenorte_
+= paredeoeste_
+= paredesul_ 
+= paredeleste_
+
+=== 5_banheiro_masculino ===
+
+= paredenorte_
+= paredeoeste_
+= paredesul_ 
+= paredeleste_
+
+=== 6_corredor === 
+
+= paredenorte_
+= paredeoeste_
+= paredesul_ 
+= paredeleste_
 
 
+=== 7_sala_zelador ===
+
+= paredenorte_
+= paredeoeste_
+= paredesul_ 
+= paredeleste_
+
+=== 8_sala_professores ===
+
+= paredenorte_
+= paredeoeste_
+= paredesul_ 
+= paredeleste_
+
+=== 9_sala_diretor === 
+
+= paredenorte_
+= paredeoeste_
+= paredesul_ 
+= paredeleste_
+ ----------------------------------*/
+ 
 === zoom_cactosecretaria ===
 = chavedasecretaria
 Quem diria, uma chave. # pegar: chavedasecretaria
 -> END
-=== zoom_mapaquadro ===
-= testeentramapa
-Eu deveria ficar com isso.
--> END
+
+=== zoom_mapaescolanormal ===
+= mapaescolanormal
+É o mapa da escola.
++ [Pegar]
+    ~ tem_mapanormal = true
+    Vai ser útil. # mapa
+    -> END
+
 === zoom_recadosecretaria ===
 = recadosecretaria
 Parece ser um recado, dos bravos. # pegar: recadosecretaria
@@ -234,7 +292,26 @@ Hmm...
 }
 -> END
 
+=== zoom_compemail ===
+
+= clickpascoa
+# zoom: zoom_emailpascoa
+É só uma aviso sobre a Páscoa.
+-> END
+
+= clickdesconhecido
+# zoom: zoom_emaildesconhecido
+...
+Que porra é essa?
+-> END
+
 === zoom_compdesbloqueado ===
+
+= navegadorcomputador
+Talvez tenha algo aqui.
+# zoom: zoom_compemail
+Alguns emails...
+-> END
 
 = arquivo_1
 Alguns relatórios escolares.
@@ -242,11 +319,11 @@ Alguns relatórios escolares.
 
 = arquivo_2
 A lista dos alunos...
-Talvez tenha algo aqui.
+Talvez tenha algo aqui, mas nada que eu precise agora.
 -> END
 
 = arquivo_3
-Um e-mail do diretor.
+Tá vazia.
 -> END
 
 = lixeiracomputador

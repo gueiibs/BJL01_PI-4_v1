@@ -1,3 +1,4 @@
+/* ---------------------------------
 === npc_teste ===
 O que você tá fazendo aqui?
 + [Perguntar sobre a chave]
@@ -5,3 +6,4 @@ O que você tá fazendo aqui?
     -> END
 + [Sair]
     -> END
+----------------------------------*/

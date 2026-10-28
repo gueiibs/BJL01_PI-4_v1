@@ -1,22 +1,44 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 using TMPro;
 
 public class MenuInicial : MonoBehaviour
 {
     [SerializeField] TMP_Dropdown opcoesTela;
 
-    [Header("Painéis")]
+    [Header("PAINEIS")]
     [SerializeField] GameObject painelMenu;
     [SerializeField] GameObject painelCreditos;
     [SerializeField] GameObject painelConfiguracoes;
 
-    const string CenaJogo = "01_AndarUm";
+    [Header("INTRODUCAO PRE JOGAR")]
+    [SerializeField] private VideoPlayer video;
+    [SerializeField] private GameObject painelIntroducao;
+
+    private const string CenaJogoUm = "01_AndarUm";
 
     public void BotaoJogar()
     {
+        if (painelIntroducao.activeSelf)
+                return; //ignora clique duplo
+
+        painelIntroducao.SetActive(true);
+        video.loopPointReached += AoTerminarVideo;
+        video.Play();
+    }
+
+    public void PularVideo()
+    {
+        video.Stop();
+        AoTerminarVideo(video);
+    }
+
+    private void AoTerminarVideo(VideoPlayer vp)
+    {
+        video.loopPointReached -= AoTerminarVideo;
         Time.timeScale = 1f;
-        SceneManager.LoadScene(CenaJogo);
+        SceneManager.LoadScene(CenaJogoUm);
     }
 
     public void BotaoCreditos() => MostrarPainel(painelCreditos);
@@ -45,7 +67,7 @@ public class MenuInicial : MonoBehaviour
 
     }
 
-    void MostrarPainel(GameObject painel)
+    private void MostrarPainel(GameObject painel)
     {
         painelMenu.SetActive(false);
         painelCreditos.SetActive(false);

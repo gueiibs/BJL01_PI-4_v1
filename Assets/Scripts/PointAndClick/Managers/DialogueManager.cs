@@ -27,6 +27,7 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private GameObject botaoContinuar;
     //[SerializeField] private Button botaoVoltarZoom; //botao voltar painel/tela anterior ao zoom(mesmo se for "zoom->zoom->zoom")
     [SerializeField] private GameObject painelSetas; //some enquanto o dialogo ta aberto
+    [SerializeField] private GameObject botaoMapa;
 
     [Header("INPUT")]
     [SerializeField] private GameObject painelInput;
@@ -159,6 +160,15 @@ public class DialogueManager : MonoBehaviour
                     ZoomManager.Instance.Abrir(zoom);
                 else
                     Debug.LogWarning($"Zoom naum encontrado: {tag}");
+            }
+
+            else if (tag == "mapa")
+            {
+                botaoMapa.SetActive(true);
+
+                GameObject obj = ClickerManager.Item(caminhoAtual); //esconde o objeto clicado
+                if (obj != null)
+                    obj.SetActive(false);
             }
         }
     }

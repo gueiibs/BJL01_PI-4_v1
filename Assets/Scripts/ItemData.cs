@@ -3,7 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Jogo/Item")]
 public class ItemData : ScriptableObject
 {
-    [SerializeField] private string NomeExibicao; //string pra nome usado In Game
+    [SerializeField] private string NomeExibicao; //string pra nome usado para jogador
     public Sprite icone;
     public GameObject prefabInspecao;
 
