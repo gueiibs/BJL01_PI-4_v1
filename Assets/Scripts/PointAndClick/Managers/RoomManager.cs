@@ -57,6 +57,15 @@ public class RoomManager : MonoBehaviour
         GetChild(paredeAtual); //mesma parede da sala anterior
     }
 
+    public int SalaAtual => salaAtual;
+    public int ParedeAtual => paredeAtual;
+
+    public void IrPara(int sala, int parede)
+    {
+        paredeAtual = parede;
+        MostrarSala(sala);
+    }
+
     public void BotaoEsquerda()
     {
         paredeAtual = (paredeAtual + 1) % 4;

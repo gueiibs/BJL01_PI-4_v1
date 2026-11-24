@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,6 +16,9 @@ public class InspecaoManager : MonoBehaviour
     [SerializeField] private GameObject painelInspecao;
     [SerializeField] private Transform spawnInspecao;
     [SerializeField] private Camera cameraInspecao;
+
+    [SerializeField] private GameObject painelDescricao;   //espaço ao lado do item
+    [SerializeField] private TextMeshProUGUI textoDescricao; //desc item
 
     private void Awake()
     {
@@ -41,6 +45,16 @@ public class InspecaoManager : MonoBehaviour
         }
     }
 
+    public void Abrir(ItemData item)
+    {
+        if (item == null) return;
+        Abrir(item.prefabInspecao);   // fecha o anterior, esconde a descrição, instancia
+
+        bool temTexto = !string.IsNullOrEmpty(item.descricao);
+        painelDescricao.SetActive(temTexto);
+        textoDescricao.text = item.descricao;
+    }
+
     //pega o obj guardado e abre a tela de inspeção
     public void Abrir(GameObject prefab)
     {
@@ -52,6 +66,9 @@ public class InspecaoManager : MonoBehaviour
 
         //fecha a ultima p/ abrir a prox
         Fechar();
+
+        //inspeções sem ItemData não herdam a descrição anterior
+        painelDescricao.SetActive(false);
 
         //cria uma copia do prefab guardado
         CurrentObject = Instantiate(prefab, spawnInspecao.position, spawnInspecao.rotation, spawnInspecao);
@@ -82,6 +99,15 @@ public class InspecaoManager : MonoBehaviour
         Debug.Log("Abrido");
     }
 
+   /* public void ResetPosicao()
+    {
+        if (CurrentObject != null)
+        {
+            CurrentObject = null;
+        }
+    }*/ 
+   // - > testar botao reset
+
     //faz a tela fechar
     public void Fechar()
     {
@@ -95,5 +121,6 @@ public class InspecaoManager : MonoBehaviour
         //desativa a cam + painel
         if (cameraInspecao != null) cameraInspecao.enabled = false;
         if (painelInspecao != null) painelInspecao.SetActive(false);
+        painelDescricao.SetActive(false);
     }
 }

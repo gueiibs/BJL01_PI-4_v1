@@ -8,20 +8,25 @@ public class Inventario : MonoBehaviour
 
     [SerializeField] private GameObject painel;   //painel em tela cheia
     [SerializeField] private Button[] slots;      //slots fixos, na ordem de preenchimento
+    [SerializeField] private ItemData[] itemInicial;
 
     private readonly List<ItemData> itens = new List<ItemData>();
+    public IReadOnlyList<ItemData> Itens => itens;
 
     private void Awake()
     {
         Instance = this;
 
         foreach (Button slot in slots)
-            Icone(slot).enabled = false; //slot vazio
+            slot.gameObject.SetActive(false); //slot vazio
     }
 
     private void Start()
     {
         painel.SetActive(false);
+
+        foreach (ItemData item in itemInicial)
+            Adicionar(item);
     }
 
     //ligue nos botões de abrir e fechar
@@ -42,6 +47,7 @@ public class Inventario : MonoBehaviour
         if (Tem(item.name))
             return true;
 
+
         if (itens.Count >= slots.Length)
         {
             Debug.LogWarning("Inventário cheio");
@@ -51,9 +57,10 @@ public class Inventario : MonoBehaviour
         Button slot = slots[itens.Count];
         itens.Add(item);
 
+        slot.gameObject.SetActive(true);
         Icone(slot).sprite = item.icone;
         Icone(slot).enabled = true;
-        slot.onClick.AddListener(() => InspecaoManager.Instance.Abrir(item.prefabInspecao));
+        slot.onClick.AddListener(() => InspecaoManager.Instance.Abrir(item));
         return true;
     }
 

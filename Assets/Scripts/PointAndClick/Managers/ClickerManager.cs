@@ -68,6 +68,7 @@ public class ItemClicavel : MonoBehaviour, IPointerClickHandler
         if (DialogueManager.Instance.Aberto)
             return;
 
+
         GameObject zoom = ZoomManager.Instance.Buscar(caminho);
         GameObject prefab = ClickerManager.PrefabInspecao(caminho);
 

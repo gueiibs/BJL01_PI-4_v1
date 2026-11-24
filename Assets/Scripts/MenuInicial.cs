@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
+using UnityEngine.UI;
 using TMPro;
 
 public class MenuInicial : MonoBehaviour
@@ -16,8 +17,81 @@ public class MenuInicial : MonoBehaviour
     [SerializeField] private VideoPlayer video;
     [SerializeField] private GameObject painelIntroducao;
 
+    [Header("FPS & MODOTELA")]
+    [SerializeField] private Image imagemFps;
+    [SerializeField] private Sprite[] spritesFps;
+
+    [SerializeField] private Image imagemModoTela;
+    [SerializeField] private Sprite[] spritesModoTela;
+
+    private int indiceModoTela;
+    private int indiceFps;
+
     private const string CenaJogoUm = "01_AndarUm";
 
+    private void Start()
+    {
+        // FPS
+        indiceFps = LimitadorFPS.IndiceAtual();
+        AtualizarFps();
+
+        // Modo de tela
+        indiceModoTela = PlayerPrefs.GetInt("ModoTela", 0);
+        AtualizarModoTela();
+        ModoTela();
+    }
+
+    // FPS
+    public void ProximoFps() => MudarFps(1);
+    public void AnteriorFps() => MudarFps(-1);
+    public void MudarFps(int direcao)
+    {
+        int total = spritesFps.Length;
+
+        indiceFps = (indiceFps + direcao + total) % total;
+
+        LimitadorFPS.Aplicar(LimitadorFPS.Opcoes[indiceFps]);
+
+        AtualizarFps();
+    }
+    private void AtualizarFps() => imagemFps.sprite = spritesFps[indiceFps];
+
+    // MODO DE TELA
+    public void ProximoTela() => MudarTela(1);
+    public void AnteriorTela() => MudarTela(-1);
+
+    public void MudarTela(int direcao)
+    {
+        int total = spritesModoTela.Length;
+
+        indiceModoTela = (indiceModoTela + direcao + total) % total;
+
+        ModoTela();
+        AtualizarModoTela();
+
+        PlayerPrefs.SetInt("ModoTela", indiceModoTela);
+        PlayerPrefs.Save();
+    }
+
+    private void AtualizarModoTela() => imagemModoTela.sprite = spritesModoTela[indiceModoTela];
+
+    private void ModoTela()
+    {
+        switch (indiceModoTela)
+        {
+            case 0:
+                Screen.fullScreenMode = FullScreenMode.MaximizedWindow;
+                break;
+
+            case 1:
+                Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
+                break;
+
+            case 2:
+                Screen.fullScreenMode = FullScreenMode.Windowed;
+                break;
+        }
+    }
     public void BotaoJogar()
     {
         if (painelIntroducao.activeSelf)
@@ -40,32 +114,10 @@ public class MenuInicial : MonoBehaviour
         Time.timeScale = 1f;
         SceneManager.LoadScene(CenaJogoUm);
     }
-
     public void BotaoCreditos() => MostrarPainel(painelCreditos);
     public void BotaoConfiguracoes() => MostrarPainel(painelConfiguracoes);
     public void BotaoVoltarMenu() => MostrarPainel(painelMenu);
     public void BotaoSair() => Application.Quit();
-
-    public void MudarTela(int modo)
-    {
-        ModoTela(modo);
-        PlayerPrefs.SetInt("ModoTela", modo);
-        PlayerPrefs.Save();
-    }
-
-    public void ModoTela(int modo)
-    {
-        switch (modo)
-        {
-            case 0: Screen.fullScreenMode = FullScreenMode.MaximizedWindow; //---> tela cheia
-                break; 
-            case 1: Screen.fullScreenMode = FullScreenMode.FullScreenWindow; //---> janela em tela cheia
-                break; 
-            case 2: Screen.fullScreenMode = FullScreenMode.Windowed; //---> janela
-                break;          
-        }
-
-    }
 
     private void MostrarPainel(GameObject painel)
     {

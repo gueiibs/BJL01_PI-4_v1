@@ -162,7 +162,7 @@ Tem as atualizações e noticias da semana.
 = paredeleste_passagemcorredor
 // sala 5 = corredor 6
 Posso ir ver o que tem alí.
-+ [Ir] # sala: 5
++ [Ir] # zoom: zoom_finalprovisorio
     -> END 
 + [Ficar aqui]
     Talvez tenha mais alguma coisa aqui.
@@ -284,7 +284,7 @@ Hmm...
 }
 -> END
 = verificarsenha
-{ senhacomputador == "1715":
+{ senhacomputador == "1625":
     ~ computadorsecretaria_desbloqueado = true
     Posso dar uma olhada agora. # zoom: zoom_compdesbloqueado
 - else:

@@ -1,12 +1,19 @@
+using TMPro;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Jogo/Item")]
 public class ItemData : ScriptableObject
 {
-    [SerializeField] private string NomeExibicao; //string pra nome usado para jogador
+    [SerializeField] private string nome;
     public Sprite icone;
     public GameObject prefabInspecao;
 
-    //sem nome In Game setado, usa o nome do arquivo
-    public string Nome => string.IsNullOrEmpty(NomeExibicao) ? name : NomeExibicao;
+    [TextArea(3, 15)]
+    public string descricao;
+
+    [Header("Estilo")]
+    public FontStyles estilo = FontStyles.Normal; //combináveis
+    public TextAlignmentOptions alinhamento = TextAlignmentOptions.TopLeft;
+
+    public string Nome => string.IsNullOrEmpty(nome) ? name : nome;
 }
