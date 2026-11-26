@@ -124,7 +124,7 @@ Esse ventilador tá todo empoeirado.
 === 3_entrada_porao ===
 
 = paredenorte_banheiromasc
-Tá trancado, talvez eu ache a chave por aí.
+Não tô afim de usar o banheiro.
 -> END
 
 = paredenorte_banheirofem
@@ -160,9 +160,9 @@ Tem as atualizações e noticias da semana.
 -> END
 
 = paredeleste_passagemcorredor
-// sala 5 = corredor 6
+// 3 = corredor
 Posso ir ver o que tem alí.
-+ [Ir] # zoom: zoom_finalprovisorio
++ [Ir] # sala: 3
     -> END 
 + [Ficar aqui]
     Talvez tenha mais alguma coisa aqui.
@@ -179,58 +179,87 @@ Eu posso voltar pro salão principal.
     
 = paredesul_entradasecretaria
 { porta_secretaria_aberta:
-    Você entra. # sala: 1
+    Melhor eu olhar aqui.
     -> END
 }
 { not TemItem("chavedasecretaria"):
-    Está trancada.
+    Tá trancada.
     -> END
 }
-A chave encaixa na fechadura.
+A chave parece ter encaixado.
 + [Entrar]
     ~ porta_secretaria_aberta = true
-    Você entra. # sala: 1
+    Talvez tenha mais alguma coisa. # sala: 1
     -> END
 + [Ainda não]
     -> END   
-= paredesul_cactosecretaria
+= paredesul_plantasecretaria
 { TemItem("chavedasecretaria"):
     Parece não ter mais nada aqui.
 - else:
-    Um cacto... parece ter alguma coisa no vaso.
+    É uma planta bonita...
 }
 -> END
-/* ---------------------------------
-= alternativa c/ menos caracteres
-    paredesul_cactosecretaria
-{ not TemItem("testechave"):
-    Um cacto... parece ter alguma coisa no vaso.
-}
--> END
-
- ----------------------------------*/
-/* ---------------------------------
-=== 4_banheiro_feminino ===
-
-= paredenorte_
-= paredeoeste_
-= paredesul_ 
-= paredeleste_
-
-=== 5_banheiro_masculino ===
-
-= paredenorte_
-= paredeoeste_
-= paredesul_ 
-= paredeleste_
 
 === 6_corredor === 
 
-= paredenorte_
-= paredeoeste_
-= paredesul_ 
-= paredeleste_
+= paredenorte_banco
+Não tô afim de descansar agora.
+-> END
+= paredenorte_porta
+Tá trancado, posso ver se tá na sala dos professores.
+-> END
 
+= paredeoeste_voltarsalaoprincipal
+Posso voltar se eu quiser.
++ [Ir] # sala: 0 
+    -> END 
++ [Ficar aqui]
+    Melhor eu dar mais uma olhada aqui.
+    -> END
+
+= paredesul_janela
+Não consigo ver nada lá dentro.
+-> END
+
+= paredesul_mapa
+{ tem_mapanormal:
+    Não preciso mais disso.
+    -> END
+}
+Parece um mapa, posso ir lá ver.
+-> END
+
+= paredesul_passagem
+Posso voltar se eu quiser.
++ [Ir] # sala: 0 
+    -> END 
++ [Ficar aqui]
+    Melhor eu dar mais uma olhada aqui.
+    -> END
+
+= paredeleste_mapa
+{ tem_mapanormal:
+    Não preciso mais disso.
+    -> END
+}
+Acho que é o mapa da escola, posso dar uma olhada.
++ [Verificar]
+    Deixa eu ver direito. # zoom: zoom_mapaescolanormal
+    -> END
++ [Agora não]
+    Vou andar por aí antes.
+    -> END
+    
+= paredeleste_passagem
+É a sala dos professores, pode ter algo importante pra lá.
++ [Ir] # sala: 5
+    -> END 
++ [Ficar aqui]
+    Melhor eu dar mais uma olhada aqui.
+    -> END
+
+/* ---------------------------------
 
 === 7_sala_zelador ===
 
@@ -239,20 +268,135 @@ A chave encaixa na fechadura.
 = paredesul_ 
 = paredeleste_
 
+ --------------------------------- */
+
 === 8_sala_professores ===
 
-= paredenorte_
-= paredeoeste_
-= paredesul_ 
-= paredeleste_
+= paredenorte_mesadir
+.
+-> END
+= paredenorte_mesaesq
+.
+-> END
+= paredenorte_itens
+.
+-> END
+= paredenorte_quadro
+.
+-> END
+= paredeoeste_passagemsalaoprincipal
+Posso voltar se eu quiser.
++ [Ir] # sala: 0 
+    -> END 
++ [Ficar aqui]
+    Melhor eu dar mais uma olhada aqui.
+    -> END
+-> END
+
+= paredeoeste_quadro
+.
+-> END
+
+= paredeoeste_mesa
+.
+-> END
+
+= paredesul_sofa
+.
+-> END
+
+= paredesul_poltrona
+.
+-> END
+
+= paredesul_porta 
+{ porta_secretaria_aberta:
+    Melhor eu olhar aqui.
+    -> END
+}
+{ not TemItem("chavediretoria"):
+    Tá trancada.
+    -> END
+}
+Que bom, a chave encaixou.
++ [Entrar]
+    ~ porta_diretoria_aberta = true
+    Talvez tenha mais alguma coisa. # sala: 6
+    -> END
++ [Ainda não]
+    Vou olhar por aí antes.
+    -> END   
+= paredeleste_quadroesq
+.
+-> END
+
+= paredeleste_quadrodir
+.
+-> END
+
+= paredeleste_meio
+.
+-> END
+
+= paredeleste_mesa
+.
+-> END
+
 
 === 9_sala_diretor === 
 
-= paredenorte_
-= paredeoeste_
-= paredesul_ 
-= paredeleste_
- ----------------------------------*/
+= paredenorte_porta
+Posso voltar pra lá se eu quiser.
++ [Ir] # sala: 5
+    -> END 
++ [Ficar aqui]
+    Melhor eu dar mais uma olhada aqui.
+    -> END
+= paredenorte_poltronadireita
+Não posso descansar agora.
+-> END
+
+= paredenorte_poltronaesquerda
+Não posso descansar agora.
+-> END
+
+= paredenorte_quadro
+.
+-> END
+
+= paredeoeste_armario
+.
+-> END
+
+= paredeoeste_janela
+Não tenho motivo pra abrir aqui.
+-> END
+
+= paredesul_computador
+Posso dar uma olhada.
+-> END
+
+= paredeleste_pratileiraleste
+.
+-> END
+
+= paredeleste_escrivaninhaleste
+.
+-> END
+
+= paredeleste_tocafitas
+ Um toca fitas...
+ + [Ver de perto] # zoom: zoom_tocafitas
+    -> END 
++ [Ignorar]
+    Agora não.
+    -> END
+ 
+ 
+ 
+ 
+ /* ----------------------- */
+ 
  
 === zoom_cactosecretaria ===
 = chavedasecretaria
@@ -273,7 +417,7 @@ Parece ser um recado, dos bravos. # pegar: recadosecretaria
 -> END
 === zoom_relogiosecretaria ===
 = relogiosecretaria
-Hmm...
+Hmm... O relógio parece tá travado às 14:30.
 -> END
 
 === zoom_computadorsecretaria ===
@@ -284,7 +428,7 @@ Hmm...
 }
 -> END
 = verificarsenha
-{ senhacomputador == "1625":
+{ senhacomputador == "1435":
     ~ computadorsecretaria_desbloqueado = true
     Posso dar uma olhada agora. # zoom: zoom_compdesbloqueado
 - else:
@@ -296,7 +440,7 @@ Hmm...
 
 = clickpascoa
 # zoom: zoom_emailpascoa
-É só uma aviso sobre a Páscoa.
+É só um aviso sobre a Páscoa.
 -> END
 
 = clickdesconhecido
@@ -323,7 +467,7 @@ Talvez tenha algo aqui, mas nada que eu precise agora.
 -> END
 
 = arquivo_3
-Tá vazia.
+Tá vazio.
 -> END
 
 = lixeiracomputador
